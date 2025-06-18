@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Paneles Solares Domésticos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 40px;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid #4facfe;
+        }
+
+        .results-section {
+            background: #f1f8e9;
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid #66bb6a;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title::before {
+            content: "⚡";
+            margin-right: 10px;
+            font-size: 1.2em;
+        }
+
+        .results-section .section-title::before {
+            content: "💰";
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 10px rgba(79, 172, 254, 0.3);
+        }
+
+        .calculate-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .result-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .result-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .result-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2e7d32;
+        }
+
+        .result-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .savings-highlight {
+            background: linear-gradient(135deg, #4ca3af, #bb66b4);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+        }
+
+        .tooltip::after {
+            content: "ℹ️";
+            margin-left: 5px;
+        }
+
+        .chart-container {
+            margin-top: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+        }
+
+        .bar-chart {
+            display: flex;
+            align-items: end;
+            height: 200px;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .bar {
+            flex: 1;
+            background: linear-gradient(to top, #f2fe4f, #fe6600);
+            border-radius: 5px 5px 0 0;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .bar:hover {
+            opacity: 0.8;
+            transform: scaleY(1.05);
+        }
+
+        .bar-label {
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .bar-value {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .explanation-section {
+            grid-column: 1 / -1;
+            background: #e3f2fd;
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid #cdf321;
+            margin-top: 20px;
+        }
+
+        .explanation-title {
+            font-size: 1.8em;
+            color: #1976d2;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .explanation-title::before {
+            content: "📚";
+            margin-right: 10px;
+        }
+
+        .formula-display {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px solid #2196f3;
+            font-family: monospace;
+            font-size: 1.1em;
+        }
+
+        .demo-section {
+            background: #fff3e0;
+            padding: 30px;
+            border-radius: 15px;
+            border-left: 5px solid #ff9800;
+            margin-top: 20px;
+        }
+
+        .demo-title {
+            font-size: 1.5em;
+            color: #f57c00;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .demo-title::before {
+            content: "🎯";
+            margin-right: 10px;
+        }
+
+        .demo-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .demo-btn {
+            background: #ff9800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .demo-btn:hover {
+            background: #f57c00;
+            transform: translateY(-1px);
+        }
+
+        .auto-load-section {
+            background: #f3e5f5;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 5px solid #9c27b0;
+        }
+
+        .auto-load-title {
+            font-size: 1.2em;
+            color: #7b1fa2;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .auto-load-title::before {
+            content: "🔄";
+            margin-right: 8px;
+        }
+
+        .municipality-select {
+            margin-top: 10px;
+        }
+
+        /* Nuevos estilos para precios y tarifas */
+        .price-display {
+            background: #e8f5e8;
+            border: 2px solid #4caf50;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 8px;
+            font-weight: bold;
+            color: #2e7d32;
+            text-align: center;
+            display: none;
+            transition: all 0.3s ease;
+        }
+
+        .tariff-display {
+            background: #fff3e0;
+            border: 2px solid #ff9800;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 8px;
+            font-weight: bold;
+            color: #e65100;
+            text-align: center;
+            display: none;
+            transition: all 0.3s ease;
+        }
+
+        .cost-breakdown {
+            background: #f0f4ff;
+            border: 2px solid #2196f3;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .cost-breakdown-title {
+            font-size: 1.1em;
+            color: #1976d2;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .cost-breakdown-title::before {
+            content: "💵";
+            margin-right: 8px;
+        }
+
+        .cost-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #e3f2fd;
+        }
+
+        .cost-item:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            border-top: 2px solid #2196f3;
+            padding-top: 10px;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .explanation-section {
+                grid-column: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌞 Calculadora Solar 🌞</h1>
+            <p>Simulador de Paneles Solares Domésticos</p>
+        </div>
+        
+        <div class="content">
+            <div class="input-section">
+                <h2 class="section-title">Datos de tu Vivienda</h2>
+                
+                <!-- Sección de carga automática de datos -->
+                <div class="auto-load-section">
+                    <div class="auto-load-title">Carga Rápida de Datos</div>
+                    <div class="form-group municipality-select">
+                        <label for="municipio">Selecciona tu municipio:</label>
+                        <select id="municipio" onchange="cargarDatosMunicipio()">
+                            <option value="">-- Seleccionar --</option>
+                            <option value="valledupar">Valledupar</option>
+                            <option value="barranquilla">Barranquilla</option>
+                            <option value="cartagena">Cartagena</option>
+                            <option value="santa_marta">Santa Marta</option>
+                            <option value="monteria">Montería</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="estrato">Estrato Socioeconómico:</label>
+                    <select id="estrato" onchange="actualizarTarifa()">
+                        <option value="">Seleccionar</option>
+                        <option value="1">Estrato 1</option>
+                        <option value="2">Estrato 2</option>
+                        <option value="3">Estrato 3</option>
+                    </select>
+                    <div id="tarifaDisplay" class="tariff-display">
+                        Tarifa: $350 COP/kWh (Subsidiada)
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="consumo" class="tooltip">Consumo mensual promedio (kWh):</label>
+                    <input type="number" id="consumo" placeholder="Ej: 150" min="50" max="1000">
+                </div>
+                
+                <div class="form-group">
+                    <label for="factura" class="tooltip">Valor promedio factura mensual (COP):</label>
+                    <input type="number" id="factura" placeholder="Ej: 85000" min="20000" max="500000">
+                </div>
+                
+                <div class="form-group">
+                    <label for="paneles">Número de paneles a instalar:</label>
+                    <input type="number" id="paneles" placeholder="Ej: 4" min="1" max="20" value="4" onchange="actualizarPrecio()">
+                </div>
+                
+                <div class="form-group">
+                    <label for="potencia">Potencia por panel (W):</label>
+                    <select id="potencia" onchange="actualizarPrecio()">
+                        <option value="300">300W (Estándar)</option>
+                        <option value="400">400W (Alta eficiencia)</option>
+                        <option value="500">500W (Premium)</option>
+                    </select>
+                    <div id="precioDisplay" class="price-display">
+                        Precio por panel: $800,000 COP
+                    </div>
+                </div>
+
+                <!-- Desglose de costos -->
+                <div id="costBreakdown" class="cost-breakdown">
+                    <div class="cost-breakdown-title">Desglose de Inversión</div>
+                    <div class="cost-item">
+                        <span>Costo paneles:</span>
+                        <span id="costoPaneles">$3,200,000</span>
+                    </div>
+                    <div class="cost-item">
+                        <span>Instalación (20%):</span>
+                        <span id="costoInstalacion">$640,000</span>
+                    </div>
+                    <div class="cost-item">
+                        <span>Inversor y accesorios:</span>
+                        <span id="costoAccesorios">$800,000</span>
+                    </div>
+                    <div class="cost-item">
+                        <span>Total inversión:</span>
+                        <span id="costoTotal">$4,640,000</span>
+                    </div>
+                </div>
+                
+                <button class="calculate-btn" onclick="calcularAhorro()">
+                    🔄 Calcular Ahorro
+                </button>
+            </div>
+            
+            <div class="results-section">
+                <h2 class="section-title">Resultados del Análisis</h2>
+                
+                <div id="results">
+                    <div class="result-card">
+                        <div class="result-value" id="ahorroMensual">$0</div>
+                        <div class="result-label">Ahorro mensual estimado</div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <div class="result-value" id="ahorroAnual">$0</div>
+                        <div class="result-label">Ahorro anual estimado</div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <div class="result-value" id="porcentajeAhorro">0%</div>
+                        <div class="result-label">Porcentaje de ahorro</div>
+                    </div>
+                    
+                    <div class="result-card">
+                        <div class="result-value" id="recuperacion">0</div>
+                        <div class="result-label">Años para recuperar inversión</div>
+                    </div>
+                </div>
+                
+                <div class="savings-highlight" id="highlightBox" style="display: none;">
+                    <h3>🎉 ¡Excelente Decisión!</h3>
+                    <p id="highlightText"></p>
+                </div>
+                
+                <div class="chart-container" id="chartContainer" style="display: none;">
+                    <h4>Comparación de Costos Mensual</h4>
+                    <div class="bar-chart" id="barChart"></div>
+                </div>
+                
+                <div class="info-grid">
+                    <div class="info-card">
+                        <strong>💡 Vida útil</strong>
+                        <div>25+ años</div>
+                    </div>
+                    <div class="info-card">
+                        <strong>🌱 CO₂ evitado</strong>
+                        <div id="co2Saved">-</div>
+                    </div>
+                    <div class="info-card">
+                        <strong>🔧 Mantenimiento</strong>
+                        <div>Mínimo</div>
+                    </div>
+                    <div class="info-card">
+                        <strong>📈 ROI</strong>
+                        <div id="roiValue">-</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sección de explicación del simulador -->
+            <div class="explanation-section">
+                <h3 class="explanation-title">¿Cómo funciona el simulador?</h3>
+                <p>Este simulador utiliza datos reales del mercado colombiano para calcular el ahorro potencial con paneles solares. La fórmula principal que utilizamos es:</p>
+                
+                <div class="formula-display">
+                    <strong>Ahorro = Horas_sol × Eficiencia_panel × 30 × Tarifa - Consumo_actual</strong>
+                    <br><br>
+                    Donde:
+                    <ul style="margin-top: 10px; margin-left: 20px;">
+                        <li><strong>Horas_sol:</strong> Promedio de horas de sol efectivas por día</li>
+                        <li><strong>Eficiencia_panel:</strong> Potencia del panel × factor de eficiencia</li>
+                        <li><strong>Tarifa:</strong> Costo por kWh según estrato socioeconómico</li>
+                        <li><strong>Consumo_actual:</strong> Tu consumo mensual actual</li>
+                    </ul>
+                </div>
+                
+                <p>Los cálculos consideran factores como:</p>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>Radiación solar promedio en Colombia (5.5 horas efectivas/día)</li>
+                    <li>Factor de autoconsumo del 70% (energía que realmente usas)</li>
+                    <li>Tarifas diferenciadas por estrato socioeconómico</li>
+                    <li>Costos reales de instalación en el mercado colombiano</li>
+                    <li>Degradación mínima de paneles (0.5% anual)</li>
+                </ul>
+            </div>
+            
+            <!-- Sección de demostración -->
+            <div class="demo-section">
+                <h3 class="demo-title">Ejemplos de Uso</h3>
+                <p>Prueba estos casos típicos para entender mejor el potencial de ahorro:</p>
+                
+                <div class="demo-buttons">
+                    <button class="demo-btn" onclick="cargarEjemplo('casa_pequena')">🏠 Casa Pequeña</button>
+                    <button class="demo-btn" onclick="cargarEjemplo('casa_mediana')">🏡 Casa Mediana</button>
+                    <button class="demo-btn" onclick="cargarEjemplo('casa_grande')">🏘️ Casa Grande</button>
+                    <button class="demo-btn" onclick="cargarEjemplo('apartamento')">🏢 Apartamento</button>
+                </div>
+                
+                <div id="ejemploDescripcion" style="margin-top: 15px; padding: 15px; background: white; border-radius: 8px; display: none;">
+                    <p id="ejemploTexto"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Dataset propuesto: datos_consumo_tarifas.csv
+const datosConsumoTarifas = {
+    valledupar: {
+        estrato: 2,
+        consumo_promedio_kWh: 180,
+        tarifa_kWh: 450,
+        horas_sol_promedio: 6.2,
+        factura_promedio: 81000 // Calculado automáticamente
+    },
+    barranquilla: {
+        estrato: 3,
+        consumo_promedio_kWh: 200,
+        tarifa_kWh: 520,
+        horas_sol_promedio: 5.8,
+        factura_promedio: 104000 // Calculado automáticamente
+    },
+    cartagena: {
+        estrato: 3,
+        consumo_promedio_kWh: 220,
+        tarifa_kWh: 530,
+        horas_sol_promedio: 5.9,
+        factura_promedio: 116600 // Calculado automáticamente
+    },
+    santa_marta: {
+        estrato: 2,
+        consumo_promedio_kWh: 190,
+        tarifa_kWh: 460,
+        horas_sol_promedio: 6.0,
+        factura_promedio: 87400 // Calculado automáticamente
+    },
+    monteria: {
+        estrato: 2,
+        consumo_promedio_kWh: 170,
+        tarifa_kWh: 440,
+        horas_sol_promedio: 5.7,
+        factura_promedio: 74800 // Calculado automáticamente
+    }
+};
+
+// Tarifas promedio por estrato en Colombia (COP/kWh)
+const tarifasPorEstrato = {
+    1: 350,  // Estrato 1 (subsidiado)
+    2: 450,  // Estrato 2 (subsidiado)
+    3: 550   // Estrato 3 (normal)
+};
+
+// Factura promedio mensual por estrato en Colombia (COP)
+const facturaPromedioPorEstrato = {
+    1: 58000,   // Estrato 1 - Consumo promedio 165 kWh
+    2: 81000,   // Estrato 2 - Consumo promedio 180 kWh
+    3: 137500   // Estrato 3 - Consumo promedio 250 kWh
+};
+
+// Costo promedio instalación panel solar en Colombia
+const costoPorPanel = {
+    300: 800000,   // Panel 300W
+    400: 1000000,  // Panel 400W
+    500: 1200000   // Panel 500W
+};
+
+const descripcionTarifas = {
+    1: "Subsidiada (-60%)",
+    2: "Subsidiada (-40%)",
+    3: "Tarifa normal"
+};
+
+// Ejemplos predefinidos con facturas actualizadas automáticamente
+const ejemplos = {
+    casa_pequena: {
+        estrato: 1,
+        consumo: 120,
+        factura: 42000, // Calculado: 120 * 350
+        paneles: 3,
+        potencia: 300,
+        descripcion: "Casa pequeña en estrato 1: Consumo básico, ideal para iniciar con energía solar"
+    },
+    casa_mediana: {
+        estrato: 2,
+        consumo: 180,
+        factura: 81000, // Calculado: 180 * 450
+        paneles: 4,
+        potencia: 400,
+        descripcion: "Casa mediana en estrato 2: Consumo promedio, excelente retorno de inversión"
+    },
+    casa_grande: {
+        estrato: 3,
+        consumo: 300,
+        factura: 165000, // Calculado: 300 * 550
+        paneles: 6,
+        potencia: 500,
+        descripcion: "Casa grande en estrato 3: Alto consumo, mayores ahorros potenciales"
+    },
+    apartamento: {
+        estrato: 3,
+        consumo: 150,
+        factura: 82500, // Calculado: 150 * 550
+        paneles: 2,
+        potencia: 400,
+        descripcion: "Apartamento en estrato 3: Consumo moderado, instalación compacta"
+    }
+};
+
+// Función para calcular factura automáticamente basada en consumo y estrato
+function calcularFacturaAutomatica(consumo, estrato) {
+    const tarifa = tarifasPorEstrato[estrato];
+    return Math.round(consumo * tarifa);
+}
+
+// Función para actualizar la tarifa y factura promedio automáticamente
+function actualizarTarifa() {
+    const estrato = parseInt(document.getElementById('estrato').value);
+    const tarifaDisplay = document.getElementById('tarifaDisplay');
+    const facturaPromedioDisplay = document.getElementById('facturaPromedioDisplay');
+    
+    if (estrato) {
+        const tarifa = tarifasPorEstrato[estrato];
+        const descripcion = descripcionTarifas[estrato];
+        const facturaPromedio = facturaPromedioPorEstrato[estrato];
+        
+        tarifaDisplay.innerHTML = `Tarifa: $${tarifa.toLocaleString()} COP/kWh (${descripcion})`;
+        tarifaDisplay.style.display = 'block';
+        
+        // Mostrar factura promedio para el estrato
+        if (facturaPromedioDisplay) {
+            facturaPromedioDisplay.innerHTML = `Valor promedio factura mensual: $${facturaPromedio.toLocaleString()} COP`;
+            facturaPromedioDisplay.style.display = 'block';
+        }
+        
+        // Actualizar factura automáticamente si hay consumo
+        actualizarFacturaSegunConsumo();
+    }
+}
+
+// Función para actualizar el precio de los paneles automáticamente
+function actualizarPrecio() {
+    const potencia = parseInt(document.getElementById('potencia').value);
+    const numPaneles = parseInt(document.getElementById('paneles').value) || 4;
+    const precioDisplay = document.getElementById('precioDisplay');
+    const costBreakdown = document.getElementById('costBreakdown');
+    
+    if (potencia) {
+        const precioPorPanel = costoPorPanel[potencia];
+        precioDisplay.innerHTML = `Precio por panel: $${precioPorPanel.toLocaleString()} COP`;
+        precioDisplay.style.display = 'block';
+        
+        // Calcular desglose de costos
+        const costoPaneles = precioPorPanel * numPaneles;
+        const costoInstalacion = costoPaneles * 0.2; // 20% instalación
+        const costoAccesorios = 800000; // Inversor y accesorios fijo
+        const costoTotal = costoPaneles + costoInstalacion + costoAccesorios;
+        
+        document.getElementById('costoPaneles').textContent = `$${costoPaneles.toLocaleString()}`;
+        document.getElementById('costoInstalacion').textContent = `$${costoInstalacion.toLocaleString()}`;
+        document.getElementById('costoAccesorios').textContent = `$${costoAccesorios.toLocaleString()}`;
+        document.getElementById('costoTotal').textContent = `$${costoTotal.toLocaleString()}`;
+        
+        costBreakdown.style.display = 'block';
+    }
+}
+
+// Función para actualizar factura según consumo con cálculo automático
+function actualizarFacturaSegunConsumo() {
+    const consumo = parseFloat(document.getElementById('consumo').value);
+    const estrato = parseInt(document.getElementById('estrato').value);
+    const facturaInput = document.getElementById('factura');
+    
+    if (consumo && estrato) {
+        // Calcular factura automáticamente
+        const facturaCalculada = calcularFacturaAutomatica(consumo, estrato);
+        
+        // Si el campo está vacío o el usuario no ha ingresado un valor personalizado, usar el calculado
+        if (!facturaInput.value || facturaInput.dataset.autoCalculated === 'true') {
+            facturaInput.value = facturaCalculada;
+            facturaInput.dataset.autoCalculated = 'true';
+        }
+        
+        // Mostrar indicador de cálculo automático
+        mostrarIndicadorCalculoAutomatico(facturaCalculada);
+    }
+}
+
+// Función para mostrar el cálculo automático como sugerencia
+function mostrarIndicadorCalculoAutomatico(facturaCalculada) {
+    let indicador = document.getElementById('facturaIndicador');
+    
+    if (!indicador) {
+        indicador = document.createElement('div');
+        indicador.id = 'facturaIndicador';
+        indicador.style.cssText = `
+            font-size: 12px; 
+            color: #666; 
+            margin-top: 5px; 
+            padding: 5px; 
+            background: #f0f8ff; 
+            border-radius: 4px; 
+            border-left: 3px solid #4facfe;
+        `;
+        document.getElementById('factura').parentNode.appendChild(indicador);
+    }
+    
+    indicador.innerHTML = `💡 Sugerencia automática: $${facturaCalculada.toLocaleString()} COP`;
+    indicador.style.display = 'block';
+}
+
+function cargarDatosMunicipio() {
+    const municipio = document.getElementById('municipio').value;
+    
+    if (municipio && datosConsumoTarifas[municipio]) {
+        const datos = datosConsumoTarifas[municipio];
+        
+        // Cargar datos automáticamente
+        document.getElementById('estrato').value = datos.estrato;
+        document.getElementById('consumo').value = datos.consumo_promedio_kWh;
+        
+        // Usar la factura promedio del municipio o calcularla automáticamente
+        const facturaEstimada = datos.factura_promedio || calcularFacturaAutomatica(datos.consumo_promedio_kWh, datos.estrato);
+        document.getElementById('factura').value = facturaEstimada;
+        document.getElementById('factura').dataset.autoCalculated = 'true';
+        
+        // Actualizar displays
+        actualizarTarifa();
+        actualizarPrecio();
+        
+        // Mostrar mensaje de carga con información detallada
+        const nombreMunicipio = municipio.charAt(0).toUpperCase() + municipio.slice(1);
+        alert(`Datos cargados para ${nombreMunicipio}:
+• Estrato: ${datos.estrato}
+• Consumo promedio: ${datos.consumo_promedio_kWh} kWh/mes  
+• Tarifa: $${datos.tarifa_kWh.toLocaleString()} COP/kWh
+• Factura estimada: $${facturaEstimada.toLocaleString()} COP/mes
+• Horas de sol: ${datos.horas_sol_promedio} horas/día`);
+    }
+}
+
+function cargarEjemplo(tipo) {
+    const ejemplo = ejemplos[tipo];
+    
+    if (ejemplo) {
+        // Cargar datos del ejemplo con factura calculada automáticamente
+        document.getElementById('estrato').value = ejemplo.estrato;
+        document.getElementById('consumo').value = ejemplo.consumo;
+        
+        // Calcular factura automáticamente para asegurar consistencia
+        const facturaCalculada = calcularFacturaAutomatica(ejemplo.consumo, ejemplo.estrato);
+        document.getElementById('factura').value = facturaCalculada;
+        document.getElementById('factura').dataset.autoCalculated = 'true';
+        
+        document.getElementById('paneles').value = ejemplo.paneles;
+        document.getElementById('potencia').value = ejemplo.potencia;
+        
+        // Actualizar displays
+        actualizarTarifa();
+        actualizarPrecio();
+        
+        // Mostrar descripción
+        document.getElementById('ejemploTexto').textContent = ejemplo.descripcion;
+        document.getElementById('ejemploDescripcion').style.display = 'block';
+        
+        // Calcular automáticamente
+        calcularAhorro();
+    }
+}
+
+function calcularAhorro() {
+    const estrato = parseInt(document.getElementById('estrato').value);
+    const consumo = parseFloat(document.getElementById('consumo').value);
+    const factura = parseFloat(document.getElementById('factura').value);
+    const numPaneles = parseInt(document.getElementById('paneles').value);
+    const potencia = parseInt(document.getElementById('potencia').value);
+    
+    // Validar datos
+    if (!estrato || !consumo || !factura || !numPaneles || !potencia) {
+        alert('Por favor completa todos los campos');
+        return;
+    }
+    
+    // Constantes para cálculos
+    const horasSolPromedio = 5.5; // Horas de sol efectivas en Colombia
+    const factorEficiencia = 0.85; // Eficiencia del sistema
+    const factorAutoconsumo = 0.8; // Porcentaje de energía solar usada directamente
+    const precioVentaExcedente = 0.5; // Precio de venta de excedentes (50% de la tarifa)
+    
+    // Cálculos de generación
+    const potenciaTotal = (numPaneles * potencia) / 1000; // kW
+    const generacionDiaria = potenciaTotal * horasSolPromedio * factorEficiencia; // kWh/día
+    const generacionMensual = generacionDiaria * 30; // kWh/mes
+    
+    const tarifa = tarifasPorEstrato[estrato];
+    
+    // Cálculo correcto de autoconsumo y excedentes
+    let energiaAutoconsumida, excedente, ahorroMensual, ingresoExcedente = 0;
+    
+    if (generacionMensual <= consumo) {
+        // La generación es menor o igual al consumo
+        energiaAutoconsumida = generacionMensual * factorAutoconsumo;
+        excedente = 0;
+        ahorroMensual = energiaAutoconsumida * tarifa;
+    } else {
+        // La generación supera el consumo - hay excedentes
+        energiaAutoconsumida = consumo * factorAutoconsumo;
+        excedente = generacionMensual - energiaAutoconsumida;
+        ahorroMensual = energiaAutoconsumida * tarifa;
+        ingresoExcedente = excedente * tarifa * precioVentaExcedente;
+    }
+    
+    const ahorroTotal = ahorroMensual + ingresoExcedente;
+    const ahorroAnual = ahorroTotal * 12;
+    
+    // Calcular porcentaje de ahorro
+    const porcentajeAhorro = (ahorroTotal / factura) * 100;
+    
+    // Calcular costo total del sistema
+    const costoPaneles = numPaneles * costoPorPanel[potencia];
+    const costoInstalacion = costoPaneles * 0.2;
+    const costoAccesorios = 800000;
+    const costoTotal = costoPaneles + costoInstalacion + costoAccesorios;
+    
+    // Calcular tiempo de recuperación
+    const tiempoRecuperacion = costoTotal / ahorroAnual;
+    
+    // Calcular CO2 evitado (0.5 kg CO2 por kWh en Colombia)
+    const co2Evitado = (generacionMensual * 12 * 0.5) / 1000; // Toneladas CO2/año
+    
+    // Calcular ROI
+    const roi = ((ahorroAnual * 25) - costoTotal) / costoTotal * 100; // ROI a 25 años
+    
+    // Mostrar resultados principales
+    document.getElementById('ahorroMensual').textContent = `${Math.round(ahorroTotal).toLocaleString()}`;
+    document.getElementById('ahorroAnual').textContent = `${Math.round(ahorroAnual).toLocaleString()}`;
+    document.getElementById('porcentajeAhorro').textContent = `${Math.round(porcentajeAhorro)}%`;
+    document.getElementById('recuperacion').textContent = `${tiempoRecuperacion.toFixed(1)} años`;
+    document.getElementById('co2Saved').textContent = `${co2Evitado.toFixed(1)} ton/año`;
+    document.getElementById('roiValue').textContent = `${Math.round(roi)}%`;
+    
+    // Mostrar detalles de generación y excedentes
+    mostrarDetallesEnergia(generacionMensual, energiaAutoconsumida, excedente, ahorroMensual, ingresoExcedente);
+    
+    // Mostrar destacado de ahorro
+    const highlightBox = document.getElementById('highlightBox');
+    const highlightText = document.getElementById('highlightText');
+    
+    if (porcentajeAhorro > 50) {
+        let mensaje = `¡Increíble! Podrías ahorrar ${Math.round(porcentajeAhorro)}% en tu factura mensual.`;
+        if (excedente > 0) {
+            mensaje += ` Además, generarías ${Math.round(excedente)} kWh de excedente por ${Math.round(ingresoExcedente).toLocaleString()} extra.`;
+        }
+        mensaje += ` En 25 años ahorrarías ${Math.round(ahorroAnual * 25).toLocaleString()}`;
+        highlightText.textContent = mensaje;
+        highlightBox.style.display = 'block';
+    } else if (porcentajeAhorro > 30) {
+        let mensaje = `¡Excelente! Con ${Math.round(porcentajeAhorro)}% de ahorro, recuperarías tu inversión en ${tiempoRecuperacion.toFixed(1)} años`;
+        if (excedente > 0) {
+            mensaje += ` y generarías ingresos adicionales de ${Math.round(ingresoExcedente).toLocaleString()}/mes`;
+        }
+        highlightText.textContent = mensaje;
+        highlightBox.style.display = 'block';
+    } else {
+        highlightBox.style.display = 'none';
+    }
+    
+    // Crear gráfico de barras
+    crearGraficoComparacion(factura, ahorroTotal);
+}
+
+// Función para mostrar detalles de energía y excedentes
+function mostrarDetallesEnergia(generacionMensual, energiaAutoconsumida, excedente, ahorroAutoconsumo, ingresoExcedente) {
+    let detalles = document.getElementById('detallesEnergia');
+    
+    if (!detalles) {
+        detalles = document.createElement('div');
+        detalles.id = 'detallesEnergia';
+        detalles.style.cssText = `
+            margin: 15px 0;
+            padding: 15px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            border-left: 4px solid #4facfe;
+        `;
+        
+        // Insertar después del gráfico
+        const chartContainer = document.getElementById('chartContainer');
+        if (chartContainer && chartContainer.parentNode) {
+            chartContainer.parentNode.insertBefore(detalles, chartContainer.nextSibling);
+        }
+    }
+    
+    let contenido = `
+        <h4 style="color: #2c3e50; margin-bottom: 10px;">📊 Detalles de Generación Energética</h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+            <div style="background: white; padding: 10px; border-radius: 5px; text-align: center;">
+                <strong style="color: #f39c12;">⚡ Generación Total</strong><br>
+                <span style="font-size: 18px; color: #2c3e50;">${generacionMensual.toFixed(1)} kWh/mes</span>
+            </div>
+            <div style="background: white; padding: 10px; border-radius: 5px; text-align: center;">
+                <strong style="color: #27ae60;">🏠 Autoconsumo</strong><br>
+                <span style="font-size: 18px; color: #2c3e50;">${energiaAutoconsumida.toFixed(1)} kWh/mes</span><br>
+                <small style="color: #7f8c8d;">Ahorro: ${Math.round(ahorroAutoconsumo).toLocaleString()}</small>
+            </div>
+    `;
+    
+    if (excedente > 0) {
+        contenido += `
+            <div style="background: white; padding: 10px; border-radius: 5px; text-align: center;">
+                <strong style="color: #e74c3c;">🔋 Excedente</strong><br>
+                <span style="font-size: 18px; color: #2c3e50;">${excedente.toFixed(1)} kWh/mes</span><br>
+                <small style="color: #7f8c8d;">Ingreso: ${Math.round(ingresoExcedente).toLocaleString()}</small>
+            </div>
+        `;
+    }
+    
+    contenido += `
+        </div>
+        <div style="margin-top: 10px; padding: 10px; background: #ecf0f1; border-radius: 5px;">
+            <strong>💡 Explicación:</strong> 
+            ${excedente > 0 ? 
+                `Tu sistema genera más energía de la que consumes. El excedente se puede vender a la red eléctrica por aproximadamente el 50% del precio de compra, generando ingresos adicionales.` : 
+                `Tu sistema cubre parte de tu consumo eléctrico. Para maximizar el ahorro, considera aumentar el número de paneles o reducir el consumo durante las horas pico.`
+            }
+        </div>
+    `;
+    
+    detalles.innerHTML = contenido;
+    detalles.style.display = 'block';
+}
+
+function crearGraficoComparacion(facturaActual, ahorroMensual) {
+    const chartContainer = document.getElementById('chartContainer');
+    const barChart = document.getElementById('barChart');
+    
+    // Limpiar gráfico anterior
+    barChart.innerHTML = '';
+    
+    const facturaSinSolar = facturaActual;
+    const facturaConSolar = facturaActual - ahorroMensual;
+    const maxValue = Math.max(facturaSinSolar, facturaConSolar);
+    
+    // Crear barras
+    const barSinSolar = document.createElement('div');
+    barSinSolar.className = 'bar';
+    barSinSolar.style.height = `${(facturaSinSolar / maxValue) * 100}%`;
+    barSinSolar.style.background = 'linear-gradient(to top, #ff6b6b, #ff8e8e)';
+    barSinSolar.innerHTML = `
+        <div class="bar-label">Sin Paneles</div>
+        <div class="bar-value">$${Math.round(facturaSinSolar).toLocaleString()}</div>
+    `;
+    
+    const barConSolar = document.createElement('div');
+    barConSolar.className = 'bar';
+    barConSolar.style.height = `${(facturaConSolar / maxValue) * 100}%`;
+    barConSolar.style.background = 'linear-gradient(to top, #4facfe, #00f2fe)';
+    barConSolar.innerHTML = `
+        <div class="bar-label">Con Paneles</div>
+        <div class="bar-value">$${Math.round(facturaConSolar).toLocaleString()}</div>
+    `;
+    
+    const barAhorro = document.createElement('div');
+    barAhorro.className = 'bar';
+    barAhorro.style.height = `${(ahorroMensual / maxValue) * 100}%`;
+    barAhorro.style.background = 'linear-gradient(to top, #4caf50, #66bb6a)';
+    barAhorro.innerHTML = `
+        <div class="bar-label">Ahorro</div>
+        <div class="bar-value">$${Math.round(ahorroMensual).toLocaleString()}</div>
+    `;
+    
+    barChart.appendChild(barSinSolar);
+    barChart.appendChild(barConSolar);
+    barChart.appendChild(barAhorro);
+    
+    chartContainer.style.display = 'block';
+}
+
+// Función para permitir al usuario usar factura personalizada
+function usarFacturaPersonalizada() {
+    const facturaInput = document.getElementById('factura');
+    facturaInput.dataset.autoCalculated = 'false';
+    
+    // Ocultar indicador automático
+    const indicador = document.getElementById('facturaIndicador');
+    if (indicador) {
+        indicador.style.display = 'none';
+    }
+}
+
+// Inicializar la aplicación
+document.addEventListener('DOMContentLoaded', function() {
+    // Cargar valores iniciales
+    actualizarTarifa();
+    actualizarPrecio();
+    
+    // Agregar event listeners para actualización automática
+    document.getElementById('consumo').addEventListener('input', actualizarFacturaSegunConsumo);
+    document.getElementById('paneles').addEventListener('input', actualizarPrecio);
+    document.getElementById('potencia').addEventListener('change', actualizarPrecio);
+    document.getElementById('estrato').addEventListener('change', actualizarTarifa);
+    
+    // Event listener para detectar cuando el usuario edita manualmente la factura
+    document.getElementById('factura').addEventListener('focus', usarFacturaPersonalizada);
+    document.getElementById('factura').addEventListener('input', function() {
+        this.dataset.autoCalculated = 'false';
+        const indicador = document.getElementById('facturaIndicador');
+        if (indicador) {
+            indicador.style.display = 'none';
+        }
+    });
+});
+    </script>
+</body>
+</html>
